@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
+import { getDriveImage } from '../utils/driveImage';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -107,7 +108,7 @@ const Cart = () => {
                       className="flex gap-4 bg-white rounded-lg p-4 shadow-sm"
                     >
                       <img
-                        src={item.product.image}
+                        src={getDriveImage(item.product.image)}
                         alt={item.product.name}
                         className="w-24 h-24 object-cover rounded-md"
                       />

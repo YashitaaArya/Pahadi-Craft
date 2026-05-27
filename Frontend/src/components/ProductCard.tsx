@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Star, ShoppingBag } from 'lucide-react';
 import { Product } from '../types';
 import { useCartStore } from '../store/cartStore';
+import ProductImageCarousel from './ProductImageCarousel';
+import { getProductImageUrls } from '../utils/productImages';
 
 interface ProductCardProps {
   product: Product;
@@ -25,10 +27,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           transition={{ duration: 0.4 }}
           className="w-full h-full"
         >
-          <img
-            src={product.image}
+          <ProductImageCarousel
+            images={getProductImageUrls(product)}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
+            showThumbnails={false}
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </motion.div>

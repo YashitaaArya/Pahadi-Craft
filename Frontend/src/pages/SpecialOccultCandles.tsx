@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Info, Star, Heart, Clock, Weight, PenTool, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
+import { getDriveImage } from '../utils/driveImage';
 import { useNavigate } from 'react-router-dom';
+import { Product } from '../types';
+import { useProductStore } from '../store/productStore';
 
 const occultCandles = [
   {
@@ -352,12 +355,24 @@ const occultCandles = [
 ];
 
 const OccultCandlesPage = () => {
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCartStore();
   const navigate = useNavigate();
+  const { products, fetchProducts } = useProductStore();
 
-  const handleAddToCart = (product) => {
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const occultProducts = React.useMemo(
+    () => products.filter((product) =>
+      product.category === 'Occult' || product.tags?.includes('occult')
+    ),
+    [products]
+  );
+
+  const handleAddToCart = (product: Product) => {
     addItem(product);
   };
 
@@ -430,15 +445,21 @@ const OccultCandlesPage = () => {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-          {occultCandles.map((product) => (
-            <motion.div
-              key={product.id}
-              className="bg-[#F5E9DA] rounded-xl shadow-lg hover:shadow-xl cursor-pointer overflow-hidden transition-all duration-300 group"
-              whileHover={{ y: -5 }}
-            >
+          {occultProducts.length === 0 ? (
+            <div className="col-span-full text-center py-20 text-white/80">
+              No occult products are available yet. Add them from the admin panel to display them here.
+            </div>
+          ) : (
+            occultProducts.map((product) => {
+              return (
+                <motion.div
+                  key={product.id}
+                  className="bg-[#F5E9DA] rounded-xl shadow-lg hover:shadow-xl cursor-pointer overflow-hidden transition-all duration-300 group"
+                  whileHover={{ y: -5 }}
+                >
               <div className="relative overflow-hidden h-60">
                 <img
-                  src={product.image}
+                  src={getDriveImage(product.image)}
                   alt={product.name}
                   className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                 />
@@ -472,7 +493,9 @@ const OccultCandlesPage = () => {
                 </div>
               </div>
             </motion.div>
-          ))}
+              );
+            })
+          )}
         </div>
       </motion.div>
 
@@ -503,7 +526,7 @@ const OccultCandlesPage = () => {
                     <AnimatePresence mode="wait">
                       <motion.img
                         key={currentImageIndex}
-                        src={getAllProductImages(selectedProduct)[currentImageIndex]}
+                        src={getDriveImage(getAllProductImages(selectedProduct)[currentImageIndex])}
                         alt={`${selectedProduct.name} - view ${currentImageIndex + 1}`}
                         className="w-full h-full object-contain p-4"
                         initial={{ opacity: 0 }}

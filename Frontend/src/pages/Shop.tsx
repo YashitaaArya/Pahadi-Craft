@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, X, ShoppingCart, ChevronLeft, ChevronRight, Star, Heart, Share2, Truck, Package, ShieldCheck } from 'lucide-react';
-import { products, categories } from '../data/products';
 import { useCartStore } from '../store/cartStore';
+import { getDriveImage } from '../utils/driveImage';
+import { useProductStore } from '../store/productStore';
 import { useNavigate } from 'react-router-dom';
+import ProductImageCarousel from '../components/ProductImageCarousel';
+import { getProductImageUrls } from '../utils/productImages';
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -13,7 +16,20 @@ const Shop = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
+  const { products, loading, fetchProducts } = useProductStore();
   const navigate = useNavigate();
+
+  // Fetch products on mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(products.map((product) => product.category).filter(Boolean))
+    );
+    return ['All', ...uniqueCategories];
+  }, [products]);
 
   const handleAddToCart = (product, qty = 1) => {
     addItem({...product, quantity: qty});
@@ -154,10 +170,12 @@ const Shop = () => {
                 whileHover={{ scale: 1.02 }}
                 onClick={() => setSelectedProduct(product)}
               >
-                <img
-                  src={product.image}
+                <ProductImageCarousel
+                  images={getProductImageUrls(product)}
                   alt={product.name}
-                  className="w-full h-60 object-cover"
+                  className="h-60"
+                  showThumbnails={false}
+                  onImageClick={() => setSelectedProduct(product)}
                 />
                 <div className="p-4">
                   <h3 className="text-xl font-serif text-[#5A4232] font-semibold mb-1">{product.name}</h3>
@@ -215,7 +233,7 @@ const Shop = () => {
                   <div className="relative h-[280px] sm:h-[350px] rounded-lg overflow-hidden bg-white/50 shadow-inner">
                     <motion.img
                       key={currentImageIndex}
-                      src={getCurrentImage()}
+                      src={getDriveImage(getCurrentImage())}
                       alt={selectedProduct.name}
                       className="w-full h-full object-contain p-4"
                       initial={{ opacity: 0 }}
@@ -257,7 +275,7 @@ const Shop = () => {
                         onClick={() => setCurrentImageIndex(0)}
                       >
                         <img 
-                          src={selectedProduct.image} 
+                          src={getDriveImage(selectedProduct.image)} 
                           alt="thumbnail" 
                           className="w-full h-full object-cover"
                         />
@@ -272,7 +290,7 @@ const Shop = () => {
                           onClick={() => setCurrentImageIndex(i + 1)}
                         >
                           <img 
-                            src={img} 
+                            src={getDriveImage(img)} 
                             alt={`thumbnail ${i + 1}`} 
                             className="w-full h-full object-cover"
                           />

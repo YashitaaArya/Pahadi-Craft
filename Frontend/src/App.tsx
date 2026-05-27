@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Cart from './components/Cart';
 import ContactSlider from './components/ContactSlider';
@@ -16,7 +16,6 @@ import FragranceGuide from './pages/FragranceGuide';
 import CustomOrder from './pages/CustomOrder';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
-import AdminPanel from './components/admin/AdminPanel';
 import Auth from './components/Auth';
 import ProtectedRoute from './components/ProtectedRoute';
 import Shipping from './pages/Shipping';
@@ -28,50 +27,305 @@ import Checkout from './components/Checkout';
 import UserProfile from './pages/UserProfile';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
-import SpecialOccultCandles from './pages/SpecialOccultCandles';// 🔥 Add this line
-import PremiumCandles from './pages/PremiumCandles'; // Premium candles page
+import SpecialOccultCandles from './pages/SpecialOccultCandles';
+import PremiumCandles from './pages/PremiumCandles';
+
+// Admin Components
+import AdminLogin from './components/admin/AdminLogin';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './components/admin/Dashboard';
+import ProductManager from './components/admin/ProductManager';
+import { useAdminAuthStore, initializeAdminAuth } from './store/adminAuthStore';
+import { ToastContainer } from './components/admin/common';
+
+// Protected Admin Route Component
+interface ProtectedAdminRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) => {
+  const { isAuthenticated, loading } = useAdminAuthStore();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#C9A66B] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
+  // Initialize admin auth on mount
+  useEffect(() => {
+    initializeAdminAuth();
+  }, []);
+
   return (
     <Router>
-      <div className="min-h-screen bg-[#FFF8F2]">
-        <Navbar />
-        <Cart />
-        <ContactSlider />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/fragrance-guide" element={<FragranceGuide />} />
-          <Route path="/custom-order" element={<CustomOrder />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/shipping" element={<Shipping />} />
-          <Route path="/returns" element={<Returns />} />
-          <Route path="/faq" element={<Faq />} />
-          <Route path="/terms-conditions" element={<TermsConditions />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/care-guide" element={<CareGuide />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path='/profile' element={<UserProfile />} />
-          <Route path='/checkout' element={<Checkout />} />
-          <Route path="/special-occult-candles" element={<SpecialOccultCandles />} /> {/* 👈 Add this line */}
-          <Route path="/premium-candles" element={<PremiumCandles />} /> {/* Premium candles route */}
+      <ToastContainer />
+      <Routes>
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedAdminRoute>
+              <AdminLayout>
+                <Routes>
+                  <Route path="/" element={<AdminDashboard />} />
+                  {/* Add more admin routes here as you build them */}
+                  <Route path="products" element={<ProductManager />} />
+                  <Route path="orders" element={<div className="text-center py-12">Orders coming soon...</div>} />
+                  <Route path="customers" element={<div className="text-center py-12">Customers coming soon...</div>} />
+                  <Route path="reviews" element={<div className="text-center py-12">Reviews coming soon...</div>} />
+                  <Route path="analytics" element={<div className="text-center py-12">Analytics coming soon...</div>} />
+                  <Route path="settings" element={<div className="text-center py-12">Settings coming soon...</div>} />
+                </Routes>
+              </AdminLayout>
+            </ProtectedAdminRoute>
+          }
+        />
 
-          
-
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute>
-                <AdminPanel />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-        <Footer />
-      </div>
+        {/* Customer Routes */}
+        <Route
+          path="/"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <HomePage />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/shop"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Shop />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <About />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/fragrance-guide"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <FragranceGuide />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/custom-order"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <CustomOrder />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/blog"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Blog />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Contact />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/auth"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Auth />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/shipping"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Shipping />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/returns"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Returns />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/faq"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Faq />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/terms-conditions"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <TermsConditions />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/privacy-policy"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <PrivacyPolicy />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/care-guide"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <CareGuide />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Dashboard />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <UserProfile />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <Checkout />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/special-occult-candles"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <SpecialOccultCandles />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/premium-candles"
+          element={
+            <div className="min-h-screen bg-[#FFF8F2]">
+              <Navbar />
+              <Cart />
+              <ContactSlider />
+              <PremiumCandles />
+              <Footer />
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
@@ -82,14 +336,11 @@ const HomePage = () => {
   const [showPopup, setShowPopup] = React.useState(false);
 
   React.useEffect(() => {
-    // Check if this is a page reload (not first visit) using sessionStorage
     const hasVisited = sessionStorage.getItem('hasVisitedBefore');
     
     if (!hasVisited) {
-      // First visit in this session, set the flag
       sessionStorage.setItem('hasVisitedBefore', 'true');
     } else {
-      // This is a reload/revisit, show the popup after a short delay
       const timer = setTimeout(() => {
         setShowPopup(true);
       }, 1500);

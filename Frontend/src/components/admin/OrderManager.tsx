@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Package, Check, X, Truck } from 'lucide-react';
 import { useAdminStore } from '../../store/adminStore';
+import { getDriveImage } from '../../utils/driveImage';
 
 const OrderManager: React.FC = () => {
   const { orders, updateOrderStatus } = useAdminStore();
@@ -68,7 +69,7 @@ const OrderManager: React.FC = () => {
               {order.items.map((item) => (
                 <div key={item.product.id} className="flex items-center gap-4">
                   <img
-                    src={item.product.image}
+                    src={getDriveImage(item.product.image)}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded"
                   />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Star, Heart, Share2, Truck, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
-import { premiumCandles } from '../data/premiumCandles';
+import { useProductStore } from '../store/productStore';
+import { getDriveImage } from '../utils/driveImage';
 import { useCartStore } from '../store/cartStore';
 import { Product } from '../types';
 
@@ -11,6 +12,23 @@ const PremiumCandles: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { products, fetchProducts } = useProductStore();
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const premiumProducts = React.useMemo(() => {
+    return products.filter((product) =>
+      product.subcategory === 'Premium' ||
+      product.tags?.includes('premium') ||
+      (product.category === 'Candles' && (product.featured || product.trending))
+    );
+  }, [products]);
+
+  const productsToShow = premiumProducts.length > 0
+    ? premiumProducts
+    : products.filter((product) => product.category === 'Candles').slice(0, 8);
 
   // Slideshow images and content - updated with more reliable candle images
   const slideshowContent = [
@@ -240,7 +258,7 @@ const PremiumCandles: React.FC = () => {
 
         {/* Products Grid with improved cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {premiumCandles.map((product: Product) => (
+          {productsToShow.map((product: Product) => (
             <motion.div
               key={product.id}
               className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-amber-100"
@@ -250,7 +268,7 @@ const PremiumCandles: React.FC = () => {
             >
               <div className="relative h-72 overflow-hidden">
                 <img
-                  src={product.image}
+                  src={getDriveImage(product.image)}
                   alt={product.name}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                 />
